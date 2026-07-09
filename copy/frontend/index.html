@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Live News Feed</h1>
+
+    <!-- here the articles will be -->
+    <div id="news-container"></div>
+
+    <script>
+        async function getNews() {
+            //  Ask the Python server for the data
+            let response = await fetch('/api/news');
+            let articles = await response.json();
+
+            //  Start with an empty screen
+            let htmlText = "";
+
+            // Loop through the articles (just like a Python 'for' loop)
+            for (let article of articles) {
+                htmlText += "<h2>" + article.title + "</h2>";
+                htmlText += "<p>" + article.content + "</p>";
+                htmlText += `<a href="${article.url}" target="_blank">full article: </a>`
+                htmlText += "<hr>"; // draws a line between articles
+            }
+
+            // Put the text in the webpage
+            document.getElementById('news-container').innerHTML = htmlText;
+        }
+
+        // run it for refresh (on command)
+        getNews();
+
+        // run it every 5 seconds
+        // todo (not really) control 5000 from .env
+        setInterval(getNews, 5000);
+    </script>
+</body>
+</html>

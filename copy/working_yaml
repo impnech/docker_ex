@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # infrastructure
+  redis:
+    image: redis:alpine
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    image: mongo:latest
+    container_name: my-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # microservices
+  fetcher:
+    build: ./fetcher
+    container_name: myp-fetch
+    env_file:
+      - .env
+    stdin_open: true  # left the -i, not really needed
+    tty: true         # same for -t
+    depends_on:
+      - redis
+
+  processor:
+    build: ./processor
+    container_name: my-proc
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    depends_on:
+      - redis
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: my-front
+    ports:
+      #- "8080:8080"  # todo: consider "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mongodb
+
+
+volumes:
+  mongo_data:
+
